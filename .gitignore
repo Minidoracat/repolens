@@ -54,3 +54,4 @@ backend/.venv
 .omc/
 temp/
 .playwright-cli/
+AGENTS.md
