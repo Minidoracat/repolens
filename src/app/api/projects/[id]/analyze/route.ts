@@ -40,6 +40,8 @@ export async function POST(
     status: "running",
     llmProvider: settings.llmProvider,
     llmModel: settings.llmModel,
+    branch: project.defaultBranch,
+    commitSha: project.commitSha,
     startedAt: new Date(),
   });
 

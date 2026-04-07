@@ -18,7 +18,10 @@ interface Project {
   id: string;
   name: string;
   sourceType: string;
+  sourceUrl?: string | null;
   latestRunId: string | null;
+  defaultBranch?: string | null;
+  commitSha?: string | null;
 }
 
 interface RunData {
@@ -86,6 +89,11 @@ export default function WorkspacePage() {
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [mermaidCode, setMermaidCode] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullError, setPullError] = useState<string | null>(null);
+  const [branches, setBranches] = useState<string[]>([]);
+  const [branchDropdownOpen, setBranchDropdownOpen] = useState(false);
+  const [branchesLoading, setBranchesLoading] = useState(false);
 
   // Panel visibility state
   const [agentVisible, setAgentVisible] = useState(true);
@@ -136,6 +144,54 @@ export default function WorkspacePage() {
     } finally {
       setIsAnalyzing(false);
     }
+  }
+
+  async function handlePull(switchToBranch?: string) {
+    if (!project || isPulling) return;
+    setIsPulling(true);
+    setPullError(null);
+    setBranchDropdownOpen(false);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/pull`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(switchToBranch ? { branch: switchToBranch } : {}),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        throw new Error(data.error ?? "Pull failed");
+      }
+      await loadProject();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Pull failed";
+      console.error("Pull failed:", err);
+      setPullError(message);
+    } finally {
+      setIsPulling(false);
+    }
+  }
+
+  async function fetchBranches() {
+    if (!project?.sourceUrl || branchesLoading) return;
+    setBranchesLoading(true);
+    try {
+      const res = await fetch(`/api/github/branches?url=${encodeURIComponent(project.sourceUrl)}`);
+      if (res.ok) {
+        const data = (await res.json()) as { branches: string[]; defaultBranch: string };
+        setBranches(data.branches);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setBranchesLoading(false);
+    }
+  }
+
+  function toggleBranchDropdown() {
+    if (!branchDropdownOpen) {
+      void fetchBranches();
+    }
+    setBranchDropdownOpen(!branchDropdownOpen);
   }
 
   function handleMermaidReady(code: string) {
@@ -249,7 +305,70 @@ export default function WorkspacePage() {
             {project.sourceType}
           </span>
         )}
+        {project?.sourceType && (project.sourceType === "github_public" || project.sourceType === "github_private") && (
+          <>
+            {project.defaultBranch && (
+              <div className="relative">
+                <button
+                  onClick={toggleBranchDropdown}
+                  className="flex items-center gap-1 rounded bg-violet-900/50 px-2 py-0.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-900/80"
+                  title={t("switchBranch")}
+                >
+                  {project.defaultBranch}
+                  <span className="text-[10px]">▼</span>
+                </button>
+                {branchDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setBranchDropdownOpen(false)} />
+                    <div className="absolute left-0 top-full z-50 mt-1 max-h-60 w-48 overflow-y-auto rounded-md border border-zinc-700 bg-zinc-900 py-1 shadow-lg">
+                      {branchesLoading ? (
+                        <p className="px-3 py-2 text-xs text-zinc-500">{t("loading")}</p>
+                      ) : branches.length === 0 ? (
+                        <p className="px-3 py-2 text-xs text-zinc-500">No branches</p>
+                      ) : (
+                        branches.map((b) => (
+                          <button
+                            key={b}
+                            onClick={() => void handlePull(b)}
+                            className={`w-full px-3 py-1.5 text-left text-xs transition-colors hover:bg-zinc-800 ${
+                              b === project.defaultBranch
+                                ? "font-medium text-violet-300"
+                                : "text-zinc-300"
+                            }`}
+                          >
+                            {b}
+                            {b === project.defaultBranch && " ✓"}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            {project.commitSha && (
+              <span className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-xs text-zinc-500">
+                {project.commitSha.slice(0, 7)}
+              </span>
+            )}
+          </>
+        )}
+        {pullError && (
+          <span className="rounded bg-red-900/30 px-2 py-0.5 text-xs text-red-400">
+            {pullError}
+          </span>
+        )}
         <div className="ml-auto flex items-center gap-2">
+          {project?.sourceType && (project.sourceType === "github_public" || project.sourceType === "github_private") && (
+            <button
+              onClick={() => void handlePull()}
+              disabled={isPulling}
+              className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-200 disabled:opacity-50"
+              title={t("pullUpdates")}
+            >
+              {isPulling ? t("pulling") : t("pullUpdates")}
+            </button>
+          )}
           <button
             onClick={() => void handleAnalyze()}
             disabled={isAnalyzing}

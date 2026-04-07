@@ -5,13 +5,13 @@ import { createProject, getSettings } from "~/server/db/queries";
 
 export async function POST(request: Request) {
   try {
-    const { url } = await request.json();
+    const { url, branch } = await request.json();
 
     if (!url || typeof url !== "string") {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    const source = await resolveGitHubSource(url);
+    const source = await resolveGitHubSource(url, branch);
     const fileTree = buildFileTree(source.localPath);
 
     const settings = await getSettings();
@@ -23,12 +23,14 @@ export async function POST(request: Request) {
       sourceUrl: source.sourceUrl,
       sourcePath: source.localPath,
       defaultBranch: source.defaultBranch,
+      commitSha: source.commitSha,
       fileTreeJson: JSON.stringify(fileTree),
     });
 
     return NextResponse.json({ projectId, name: source.name });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
+    const raw = err instanceof Error ? err.message : "Unknown error";
+    const message = raw.replace(/https:\/\/[^@]+@/g, "https://***@");
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

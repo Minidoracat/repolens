@@ -16,4 +16,6 @@ export interface ProjectSource {
   defaultBranch?: string;
   /** Source URL (for GitHub sources) */
   sourceUrl?: string;
+  /** HEAD commit SHA */
+  commitSha?: string;
 }

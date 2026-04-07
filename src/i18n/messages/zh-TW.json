@@ -81,7 +81,10 @@
     "errorZipFile": "請選擇 Zip 文件",
     "errorZipOnly": "只支援 .zip 文件",
     "errorSubmit": "提交失敗",
-    "errorUnknown": "未知錯誤"
+    "errorUnknown": "未知錯誤",
+    "branchLabel": "分支",
+    "branchLoading": "載入分支...",
+    "branchDefault": "預設分支"
   },
   "workspace": {
     "reanalyze": "重新分析",
@@ -110,7 +113,10 @@
     "noFiles": "無文件",
     "loading": "載入中...",
     "backHome": "返回首頁",
-    "loadingProject": "載入中..."
+    "loadingProject": "載入中...",
+    "pullUpdates": "拉取更新",
+    "pulling": "更新中...",
+    "switchBranch": "切換分支"
   },
   "settings": {
     "title": "系統設定",

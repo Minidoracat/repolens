@@ -81,7 +81,10 @@
     "errorZipFile": "Please select a Zip file",
     "errorZipOnly": "Only .zip files are supported",
     "errorSubmit": "Submission failed",
-    "errorUnknown": "Unknown error"
+    "errorUnknown": "Unknown error",
+    "branchLabel": "Branch",
+    "branchLoading": "Loading branches...",
+    "branchDefault": "Default branch"
   },
   "workspace": {
     "reanalyze": "Re-analyze",
@@ -110,7 +113,10 @@
     "noFiles": "No files",
     "loading": "Loading...",
     "backHome": "Back to Home",
-    "loadingProject": "Loading..."
+    "loadingProject": "Loading...",
+    "pullUpdates": "Pull Updates",
+    "pulling": "Pulling...",
+    "switchBranch": "Switch Branch"
   },
   "settings": {
     "title": "Settings",

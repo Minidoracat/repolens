@@ -32,10 +32,55 @@ export default function HomePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [branches, setBranches] = useState<string[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<string>("");
+  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [defaultBranch, setDefaultBranch] = useState<string>("");
 
   useEffect(() => {
     void fetchProjects();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "github" || !githubUrl.trim()) {
+      setBranches([]);
+      setSelectedBranch("");
+      setDefaultBranch("");
+      return;
+    }
+    setBranchesLoading(true);
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          const res = await fetch(`/api/github/branches?url=${encodeURIComponent(githubUrl.trim())}`);
+          if (res.ok) {
+            const data = (await res.json()) as { branches: string[]; defaultBranch: string };
+            setBranches(data.branches);
+            setDefaultBranch(data.defaultBranch);
+            setSelectedBranch(data.defaultBranch);
+            setError(null);
+          } else {
+            const data = (await res.json().catch(() => ({}))) as { error?: string };
+            console.warn("[RepoLens] Branch fetch failed:", data.error);
+            setBranches([]);
+            setSelectedBranch("");
+            setDefaultBranch("");
+          }
+        } catch (err) {
+          console.warn("[RepoLens] Branch fetch error:", err);
+          setBranches([]);
+          setSelectedBranch("");
+          setDefaultBranch("");
+        } finally {
+          setBranchesLoading(false);
+        }
+      })();
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+      setBranchesLoading(false);
+    };
+  }, [githubUrl, activeTab]);
 
   async function fetchProjects() {
     try {
@@ -61,7 +106,7 @@ export default function HomePage() {
         res = await fetch("/api/projects/from-github", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: githubUrl.trim() }),
+          body: JSON.stringify({ url: githubUrl.trim(), branch: selectedBranch || undefined }),
         });
       } else if (activeTab === "local") {
         if (!localPath.trim()) throw new Error(t("errorLocalPath"));
@@ -150,6 +195,25 @@ export default function HomePage() {
                 onKeyDown={(e) => { if (e.key === "Enter") void handleSubmit(); }}
                 className="border-zinc-700 bg-zinc-950 text-zinc-100 placeholder-zinc-600"
               />
+              {branchesLoading && (
+                <p className="text-xs text-zinc-500">{t("branchLoading")}</p>
+              )}
+              {!branchesLoading && branches.length > 0 && (
+                <div className="space-y-1">
+                  <label className="text-sm text-zinc-400">{t("branchLabel")}</label>
+                  <select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    className="w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  >
+                    {branches.map((branch) => (
+                      <option key={branch} value={branch}>
+                        {branch}{branch === defaultBranch ? ` (${t("branchDefault")})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 

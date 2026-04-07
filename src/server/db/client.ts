@@ -95,6 +95,25 @@ const autoMigrate = `
 `;
 sqlite.exec(autoMigrate);
 
+// Incremental migrations for new columns
+const migrations = [
+  "ALTER TABLE projects ADD COLUMN commit_sha TEXT",
+  "ALTER TABLE analysis_runs ADD COLUMN branch TEXT",
+  "ALTER TABLE analysis_runs ADD COLUMN commit_sha TEXT",
+  "ALTER TABLE analysis_runs ADD COLUMN file_tree_snapshot TEXT",
+];
+for (const sql of migrations) {
+  try {
+    sqlite.exec(sql);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "";
+    if (!msg.includes("duplicate column")) {
+      console.error(`[RepoLens] Migration failed: ${sql}`, err);
+      throw err;
+    }
+  }
+}
+
 // Reset admin: set RESET_ADMIN=true in .env, restart, then remove the variable
 if (process.env.RESET_ADMIN === "true") {
   sqlite.exec(`

@@ -54,6 +54,7 @@ export const projects = sqliteTable("projects", {
   sourceUrl: text("source_url"),
   sourcePath: text("source_path"),
   defaultBranch: text("default_branch"),
+  commitSha: text("commit_sha"),
 
   fileTreeJson: text("file_tree_json"),
 
@@ -88,6 +89,10 @@ export const analysisRuns = sqliteTable("analysis_runs", {
   errorMessage: text("error_message"),
   startedAt: integer("started_at", { mode: "timestamp" }).notNull(),
   finishedAt: integer("finished_at", { mode: "timestamp" }),
+
+  branch: text("branch"),
+  commitSha: text("commit_sha"),
+  fileTreeSnapshot: text("file_tree_snapshot"),
 });
 
 // ─── Agent Steps ─────────────────────────────────────────────────────

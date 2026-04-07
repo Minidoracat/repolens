@@ -71,6 +71,16 @@ export async function deleteProject(id: string) {
   db.delete(projects).where(eq(projects.id, id)).run();
 }
 
+export async function updateProjectAfterPull(
+  id: string,
+  data: { fileTreeJson: string; commitSha: string; defaultBranch: string },
+) {
+  db.update(projects)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(projects.id, id))
+    .run();
+}
+
 // ─── Analysis Runs ───────────────────────────────────────────────────
 
 export async function createRun(
