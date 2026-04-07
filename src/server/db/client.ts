@@ -24,12 +24,17 @@ sqlite.pragma("journal_mode = WAL");
 sqlite.pragma("foreign_keys = ON");
 
 // Clean up stale runs only in production (dev hot reloads would kill active runs)
+// Wrapped in try-catch: table may not exist yet during build or first run
 if (process.env.NODE_ENV === "production") {
-  sqlite
-    .prepare(
-      `UPDATE analysis_runs SET status = 'failed', error_message = 'Server restarted during analysis' WHERE status = 'running'`,
-    )
-    .run();
+  try {
+    sqlite
+      .prepare(
+        `UPDATE analysis_runs SET status = 'failed', error_message = 'Server restarted during analysis' WHERE status = 'running'`,
+      )
+      .run();
+  } catch {
+    // Table doesn't exist yet — will be created by drizzle-kit push
+  }
 }
 
 export const db = drizzle(sqlite, { schema });
