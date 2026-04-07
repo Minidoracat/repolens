@@ -58,10 +58,12 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [success, setSuccess] = useState("");
 
   const [githubToken, setGithubToken] = useState("");
+  const [githubTokenChanged, setGithubTokenChanged] = useState(false);
   const [provider, setProvider] = useState<Provider>("openai");
   const [baseUrl, setBaseUrl] = useState("");
   const [model, setModel] = useState("");
   const [apiKey, setApiKey] = useState("");
+  const [apiKeyChanged, setApiKeyChanged] = useState(false);
   const [maxSteps, setMaxSteps] = useState(25);
   const [locale, setLocale] = useState<Locale>("zh-TW");
   const [theme, setTheme] = useState<Theme>("system");
@@ -85,7 +87,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         setBaseUrl(data.llmBaseUrl ?? "");
         setModel(data.llmModel ?? "");
         setApiKey(data.llmApiKey === "***" ? "" : (data.llmApiKey ?? ""));
+        setApiKeyChanged(false);
         setGithubToken(data.githubToken === "***" ? "" : (data.githubToken ?? ""));
+        setGithubTokenChanged(false);
         setLocale(data.uiLocale ?? "zh-TW");
         setTheme(data.uiTheme ?? "system");
       })
@@ -105,8 +109,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
           llmProvider: provider,
           llmBaseUrl: baseUrl || null,
           llmModel: model,
-          llmApiKey: apiKey || null,
-          githubToken: githubToken || null,
+          llmApiKey: apiKeyChanged ? (apiKey || null) : "***",
+          githubToken: githubTokenChanged ? (githubToken || null) : "***",
           uiLocale: locale,
           uiTheme: theme,
         }),
@@ -186,7 +190,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       type="password"
                       placeholder="ghp_xxxxxxxxxxxx"
                       value={githubToken}
-                      onChange={(e) => setGithubToken(e.target.value)}
+                      onChange={(e) => { setGithubToken(e.target.value); setGithubTokenChanged(true); }}
                     />
                     <p className="text-xs text-muted-foreground">
                       {t("githubTokenHint")}
@@ -234,7 +238,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       type="password"
                       placeholder="sk-..."
                       value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
+                      onChange={(e) => { setApiKey(e.target.value); setApiKeyChanged(true); }}
                     />
                   </div>
                   <Button

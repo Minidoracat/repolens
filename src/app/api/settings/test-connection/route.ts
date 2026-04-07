@@ -4,6 +4,8 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createAzure } from "@ai-sdk/azure";
 import { generateText } from "ai";
+import { getSettings } from "~/server/db/queries";
+import { decryptIfNeeded } from "~/lib/crypto";
 
 interface TestConnectionBody {
   provider: "openai" | "anthropic" | "google" | "openrouter" | "ollama" | "azure";
@@ -12,10 +14,27 @@ interface TestConnectionBody {
   apiKey?: string;
 }
 
+// Ensure baseURL ends with /v1 for OpenAI-compatible providers
+// Must match the logic in src/server/agent/llm-factory.ts
+function ensureV1(url: string | undefined, defaultUrl: string): string {
+  const u = url || defaultUrl;
+  const cleaned = u.replace(/\/+$/, "");
+  return cleaned.endsWith("/v1") ? cleaned : `${cleaned}/v1`;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json() as TestConnectionBody;
-    const { provider, baseUrl, model, apiKey = "" } = body;
+    const { provider, baseUrl, model } = body;
+
+    // If apiKey is empty, fall back to the stored key in DB
+    let apiKey = body.apiKey ?? "";
+    if (!apiKey) {
+      const settings = await getSettings();
+      if (settings?.llmApiKey) {
+        apiKey = decryptIfNeeded(settings.llmApiKey) ?? "";
+      }
+    }
 
     if (!provider || !model) {
       return NextResponse.json(
@@ -27,7 +46,10 @@ export async function POST(request: Request) {
     let languageModel;
     switch (provider) {
       case "openai":
-        languageModel = createOpenAI({ apiKey, baseURL: baseUrl })(model);
+        languageModel = createOpenAI({
+          apiKey,
+          baseURL: baseUrl ? ensureV1(baseUrl, "") : undefined,
+        })(model);
         break;
       case "anthropic":
         languageModel = createAnthropic({ apiKey, baseURL: baseUrl })(model);
@@ -41,13 +63,13 @@ export async function POST(request: Request) {
       case "openrouter":
         languageModel = createOpenAI({
           apiKey,
-          baseURL: baseUrl ?? "https://openrouter.ai/api/v1",
+          baseURL: ensureV1(baseUrl, "https://openrouter.ai/api"),
         })(model);
         break;
       case "ollama":
         languageModel = createOpenAI({
           apiKey: "ollama",
-          baseURL: baseUrl ?? "http://localhost:11434/v1",
+          baseURL: ensureV1(baseUrl, "http://localhost:11434"),
         })(model);
         break;
       default:
