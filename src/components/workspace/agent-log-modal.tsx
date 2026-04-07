@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "~/components/ui/dialog";
 import { useTranslations } from "next-intl";
 
@@ -122,6 +123,7 @@ export function AgentLogModal({ steps, onClose }: AgentLogModalProps) {
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col bg-zinc-900 border-zinc-700 text-zinc-100">
         <DialogHeader>
           <DialogTitle className="text-zinc-100">{t("title")}</DialogTitle>
+          <DialogDescription className="sr-only">{t("title")}</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto space-y-2 pr-1">
           {steps.length === 0 ? (

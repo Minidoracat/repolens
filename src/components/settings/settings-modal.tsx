@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -150,6 +151,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription className="sr-only">{t("title")}</DialogDescription>
         </DialogHeader>
 
         {loading ? (
