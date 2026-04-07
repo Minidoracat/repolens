@@ -62,10 +62,22 @@ See [`.env.example`](./.env.example) for all options. Key variables:
 |----------|-------------|
 | `ENCRYPTION_KEY` | Required. AES key for encrypting API keys in DB |
 | `PORT` | Server port (default: 3000) |
+| `HOST` | Dev server bind address (default: 0.0.0.0) |
 | `DATA_DIR` | Data directory (default: ./data) |
 | `ALLOWED_LOCAL_PATHS` | Comma-separated whitelist for local path analysis |
+| `ALLOWED_DEV_ORIGINS` | Allowed origins for dev mode LAN access (e.g. `192.168.1.100`) |
+| `RESET_ADMIN` | Set to `true` to reset admin password, then restart and remove |
 
 LLM provider settings are configured through the web UI after initial setup.
+
+### Forgot Password
+
+If you forget the admin password:
+
+1. Add `RESET_ADMIN=true` to your `.env`
+2. Restart the server
+3. Visit `/setup` to set a new password
+4. Remove `RESET_ADMIN` from `.env` and restart
 
 ## Project Structure
 

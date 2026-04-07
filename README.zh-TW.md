@@ -62,10 +62,20 @@ pnpm dev
 |------|------|
 | `ENCRYPTION_KEY` | 必填。用於加密 DB 中 API Key 的 AES 金鑰 |
 | `PORT` | 伺服器埠號（預設：3000） |
+| `HOST` | Dev server 綁定位址（預設：0.0.0.0） |
 | `DATA_DIR` | 資料目錄（預設：./data） |
 | `ALLOWED_LOCAL_PATHS` | 逗號分隔的本地路徑白名單 |
+| `ALLOWED_DEV_ORIGINS` | 開發模式允許的區網來源（如 `192.168.1.100`） |
+| `RESET_ADMIN` | 設為 `true` 可重置管理員密碼，重啟後移除 |
 
 LLM 供應商設定在初次設定後透過 Web UI 配置。
+
+### 忘記密碼
+
+1. 在 `.env` 中加入 `RESET_ADMIN=true`
+2. 重啟伺服器
+3. 訪問 `/setup` 重新設定密碼
+4. 從 `.env` 移除 `RESET_ADMIN` 並重啟
 
 ## 專案結構
 

@@ -7,12 +7,8 @@ const PUBLIC_PATHS = ["/login", "/setup", "/api/auth", "/api/setup"];
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip public paths and static assets
-  if (
-    PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
-    pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico"
-  ) {
+  // Skip public paths
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 
@@ -57,5 +53,5 @@ function redirectOrUnauthorized(request: NextRequest, pathname: string) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next|favicon.ico).*)"],
 };

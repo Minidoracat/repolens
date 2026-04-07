@@ -6,7 +6,7 @@
   "scripts": {
     "build": "next build",
     "check": "pnpm run lint && pnpm run typecheck",
-    "dev": "dotenv -- sh -c 'next dev --turbopack --port ${PORT:-3000}'",
+    "dev": "dotenv -- sh -c 'next dev --turbopack --hostname ${HOST:-0.0.0.0} --port ${PORT:-3000}'",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "preview": "next build && next start",

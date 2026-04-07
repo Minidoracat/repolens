@@ -52,10 +52,6 @@
   ],
   "exclude": [
     "node_modules",
-    "backend/**/*",
-    "backend/venv",
-    "backend/.venv",
-    "backend/__pycache__",
-    "**/__pycache__"
+    "data/**/*"
   ]
 }
