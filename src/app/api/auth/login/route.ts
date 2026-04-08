@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { getSettings } from "~/server/db/queries";
 import { createUserSession } from "~/server/auth/session";
+import { createModuleLogger } from "~/server/logger";
+const log = createModuleLogger("api");
 
 export async function POST(request: Request) {
   try {
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
     await createUserSession();
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[RepoLens]", err);
+    log.error({ err }, "Login failed");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

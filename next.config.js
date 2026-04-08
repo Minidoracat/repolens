@@ -6,7 +6,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const config = {
   reactStrictMode: false,
   output: "standalone",
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["better-sqlite3", "pino", "pino-roll"],
   allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS?.split(",") ?? [],
 };
 

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRun, listStepsByRun } from "~/server/db/queries";
+import { createModuleLogger } from "~/server/logger";
+const log = createModuleLogger("api");
 
 export async function GET(
   _request: Request,
@@ -14,7 +16,7 @@ export async function GET(
     const steps = await listStepsByRun(id);
     return NextResponse.json({ run, steps });
   } catch (err) {
-    console.error("[RepoLens]", err);
+    log.error({ err }, "Failed to get run");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

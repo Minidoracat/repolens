@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getProject, listRunsByProject } from "~/server/db/queries";
+import { createModuleLogger } from "~/server/logger";
+const log = createModuleLogger("api");
 
 export async function GET(
   _request: Request,
@@ -14,7 +16,7 @@ export async function GET(
     const runs = await listRunsByProject(id);
     return NextResponse.json({ runs });
   } catch (err) {
-    console.error("[RepoLens]", err);
+    log.error({ err }, "Failed to get project runs");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

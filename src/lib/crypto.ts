@@ -1,4 +1,7 @@
 import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+import { createModuleLogger } from "~/server/logger";
+
+const log = createModuleLogger("crypto");
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12; // 96-bit IV for GCM
@@ -89,7 +92,7 @@ export function decryptIfNeeded(value: string | null | undefined): string | null
   try {
     return decrypt(value);
   } catch (err) {
-    console.warn("[RepoLens] Failed to decrypt value — possible ENCRYPTION_KEY mismatch:", err instanceof Error ? err.message : err);
+    log.warn({ err }, "Failed to decrypt value — possible ENCRYPTION_KEY mismatch");
     return null; // Return null instead of raw ciphertext
   }
 }

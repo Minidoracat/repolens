@@ -1,6 +1,9 @@
 import "server-only";
 
 import { getGitHubApiHeaders } from "~/server/github-auth";
+import { createModuleLogger } from "../logger";
+
+const log = createModuleLogger("og");
 
 type RepoMetadataResponse = {
   default_branch?: string;
@@ -45,7 +48,7 @@ export async function getRepoSocialMetadata(
         typeof data.stargazers_count === "number" ? data.stargazers_count : null,
     };
   } catch (error) {
-    console.error("Failed to fetch repo social metadata:", error);
+    log.error({ err: error }, "Failed to fetch repo social metadata");
 
     return {
       defaultBranch: null,

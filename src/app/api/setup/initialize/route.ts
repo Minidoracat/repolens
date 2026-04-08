@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import { upsertSettings, getSettings } from "~/server/db/queries";
 import { createUserSession } from "~/server/auth/session";
 import { encryptIfNeeded } from "~/lib/crypto";
+import { createModuleLogger } from "~/server/logger";
+const log = createModuleLogger("api");
 
 interface InitializeBody {
   password: string;
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
     await createUserSession();
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("Setup initialize error:", err);
+    log.error({ err }, "Setup initialize error");
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

@@ -1,4 +1,5 @@
 import "server-only";
+import { createModuleLogger } from "../logger";
 import { streamText } from "ai";
 import { nanoid } from "nanoid";
 import { getLanguageModel } from "./llm-factory";
@@ -13,6 +14,8 @@ import { generateExplanationTool } from "./tools/generate-explanation";
 import { generateMermaidTool } from "./tools/generate-mermaid";
 import { validateMermaidTool } from "./tools/validate-mermaid";
 import { updateRun, updateProject, insertStep } from "../db/queries";
+
+const log = createModuleLogger("agent");
 
 export interface AgentStepEvent {
   type:
@@ -50,6 +53,7 @@ export async function runAnalysis({
   abortSignal,
 }: RunAnalysisArgs) {
   const model = await getLanguageModel();
+  log.debug({ projectId, runId, projectPath }, "Starting analysis");
 
   let stepIndex = 0;
   let mermaidCode: string | null = null;
@@ -93,6 +97,7 @@ export async function runAnalysis({
               durationMs: null,
               createdAt: now,
             });
+            log.debug({ step: currentStep, tool: tc.toolName }, "Tool call started");
             onStep({
               type: "step_started",
               stepIndex: currentStep,
@@ -173,10 +178,11 @@ export async function runAnalysis({
       lastAnalyzedAt: new Date(),
     });
 
+    log.debug({ runId, steps: stepIndex, inputTokens: usage?.inputTokens, outputTokens: usage?.outputTokens }, "Analysis completed");
     onStep({ type: "run_completed", runId });
     return { mermaidCode, explanation: explanation || fullText };
   } catch (err) {
-    console.error("[RepoLens Agent] Analysis failed:", err);
+    log.error({ err }, "Analysis failed");
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
 
     if (abortSignal?.aborted) {

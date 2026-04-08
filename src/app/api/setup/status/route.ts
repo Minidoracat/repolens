@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSettings } from "~/server/db/queries";
+import { createModuleLogger } from "~/server/logger";
+const log = createModuleLogger("api");
 
 export async function GET() {
   try {
@@ -8,7 +10,7 @@ export async function GET() {
       isInitialized: settings?.isInitialized ?? false,
     });
   } catch (err) {
-    console.error("[RepoLens]", err);
+    log.error({ err }, "Failed to get setup status");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

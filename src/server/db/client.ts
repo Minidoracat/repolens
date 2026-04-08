@@ -3,6 +3,9 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import path from "path";
 import fs from "fs";
 import * as schema from "./schema";
+import { createModuleLogger } from "../logger";
+
+const log = createModuleLogger("db");
 
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const DB_PATH = path.join(DATA_DIR, "db", "repolens.db");
@@ -108,7 +111,7 @@ for (const sql of migrations) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : "";
     if (!msg.includes("duplicate column")) {
-      console.error(`[RepoLens] Migration failed: ${sql}`, err);
+      log.error({ err, sql }, "Migration failed");
       throw err;
     }
   }
@@ -120,7 +123,7 @@ if (process.env.RESET_ADMIN === "true") {
     UPDATE settings SET is_initialized = 0, admin_password_hash = NULL;
     DELETE FROM sessions;
   `);
-  console.log("[RepoLens] Admin reset complete. Remove RESET_ADMIN from .env and restart.");
+  log.warn("Admin reset complete. Remove RESET_ADMIN from .env and restart.");
 }
 
 // Clean up stale runs on production startup

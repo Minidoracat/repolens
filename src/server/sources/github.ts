@@ -5,6 +5,9 @@ import fs from "fs";
 import type { ProjectSource } from "./types";
 import { getSettings } from "../db/queries";
 import { decryptIfNeeded } from "../../lib/crypto";
+import { createModuleLogger } from "../logger";
+
+const log = createModuleLogger("sources");
 
 const execFileAsync = promisify(execFile);
 
@@ -40,7 +43,7 @@ async function getCurrentBranch(repoDir: string): Promise<string> {
     );
     return stdout.trim();
   } catch (err) {
-    console.warn(`[RepoLens] Failed to get current branch for ${repoDir}:`, err);
+    log.warn({ err, repoDir }, "Failed to get current branch");
     return "HEAD";
   }
 }
@@ -52,7 +55,7 @@ async function getHeadCommitSha(repoDir: string): Promise<string> {
     );
     return stdout.trim();
   } catch (err) {
-    console.warn(`[RepoLens] Failed to get HEAD commit SHA for ${repoDir}:`, err);
+    log.warn({ err, repoDir }, "Failed to get HEAD commit SHA");
     return "";
   }
 }
@@ -131,6 +134,8 @@ export async function cloneOrPullRepo(
     cloneUrl = `https://${token}@github.com/${owner}/${repo}.git`;
   }
 
+  log.debug({ owner, repo, branch: branch || "default", repoDir }, "Clone or pull repo");
+
   try {
     if (fs.existsSync(path.join(repoDir, ".git"))) {
       // Repo exists
@@ -156,7 +161,7 @@ export async function cloneOrPullRepo(
     }
   } catch (err) {
     // Log original error before destructive fallback
-    console.error(`[RepoLens] git operation failed for ${owner}/${repo}, falling back to re-clone:`, err);
+    log.error({ err, owner, repo }, "git operation failed, falling back to re-clone");
     fs.rmSync(repoDir, { recursive: true, force: true });
     const cloneArgs = ["clone", "--depth", "1"];
     if (branch) cloneArgs.push("--branch", branch);
@@ -176,6 +181,8 @@ export async function cloneOrPullRepo(
 
   // Get commit SHA
   const commitSha = await getHeadCommitSha(repoDir);
+
+  log.debug({ owner, repo, branch: defaultBranch, commitSha }, "Repo ready");
 
   return {
     name: `${owner}/${repo}`,

@@ -1,4 +1,6 @@
 import { getRun, listStepsByRun } from "~/server/db/queries";
+import { createModuleLogger } from "~/server/logger";
+const log = createModuleLogger("api");
 
 export const dynamic = "force-dynamic";
 
@@ -108,7 +110,7 @@ export async function GET(
             controller.close();
           }
         } catch (err) {
-          console.error("[RepoLens] SSE polling error:", err);
+          log.error({ err }, "SSE polling error");
           try { sendEvent("run_failed", { error: "Stream error" }); } catch { /* ignore */ }
           clearInterval(pollInterval);
           controller.close();

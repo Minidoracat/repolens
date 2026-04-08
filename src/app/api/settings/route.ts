@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSettings, upsertSettings } from "~/server/db/queries";
 import { encryptIfNeeded } from "~/lib/crypto";
+import { createModuleLogger } from "~/server/logger";
+const log = createModuleLogger("api");
 
 export async function GET() {
   try {
@@ -20,7 +22,7 @@ export async function GET() {
       isInitialized: s.isInitialized,
     });
   } catch (err) {
-    console.error("[RepoLens]", err);
+    log.error({ err }, "Failed to get settings");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -66,7 +68,7 @@ export async function PATCH(request: Request) {
     await upsertSettings(patch);
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[RepoLens]", err);
+    log.error({ err }, "Failed to update settings");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

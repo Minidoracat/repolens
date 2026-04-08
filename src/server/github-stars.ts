@@ -1,6 +1,9 @@
 import "server-only";
 
 import { getGitHubApiHeaders } from "./github-auth";
+import { createModuleLogger } from "./logger";
+
+const log = createModuleLogger("github");
 
 interface GitHubRepoResponse {
   stargazers_count: number;
@@ -27,7 +30,7 @@ export async function getStarCount() {
     const data = (await response.json()) as GitHubRepoResponse;
     return data.stargazers_count;
   } catch (error) {
-    console.error("Error fetching GitHub star count:", error);
+    log.error({ err: error }, "Error fetching GitHub star count");
     return null;
   }
 }

@@ -5,6 +5,8 @@ import {
   createRun,
 } from "~/server/db/queries";
 import { runAnalysis } from "~/server/agent/runtime";
+import { createModuleLogger } from "~/server/logger";
+const log = createModuleLogger("api");
 
 // Store active AbortControllers for cancel support
 const activeRuns = new Map<string, AbortController>();
@@ -35,6 +37,8 @@ export async function POST(
     );
   }
 
+  log.debug({ projectId: id, provider: settings.llmProvider, model: settings.llmModel }, "Starting analysis run");
+
   const runId = await createRun({
     projectId: id,
     status: "running",
@@ -60,7 +64,7 @@ export async function POST(
     },
   })
     .catch((err) => {
-      console.error("[RepoLens] Analysis background error:", err);
+      log.error({ err }, "Analysis background error");
     })
     .finally(() => {
       activeRuns.delete(runId);
